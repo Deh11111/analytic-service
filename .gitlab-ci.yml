@@ -1,0 +1,28 @@
+image:
+  name: docker/compose:latest
+  entrypoint: ["/bin/sh", "-c"]
+
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apk add --update openssh )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan $HOST_PROD >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - echo "HOST *" > ~/.ssh/config
+    - echo "StrictHostKeyChecking no" >> ~/.ssh/config
+  script:
+    - ssh $SSH_USER_PROD@$HOST_PROD "
+          cd /home/$SSH_USER_PROD/analytic-service/ &&
+          git pull &&
+          docker-compose up -d --force-recreate &&
+          docker exec -it web pipenv run flask db init &&
+          docker exec -it web pipenv run flask db migrate &&
+          docker exec -it web pipenv run flask db upgrade"
+  when: manual
