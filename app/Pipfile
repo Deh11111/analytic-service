@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pymysql = "*"
+requests = "*"
+flask = "==2.2.2"
+flasgger = "==0.9.5"
+flask-marshmallow = "*"
+python-dotenv = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+marshmallow-sqlalchemy = "*"
+mysqlclient = "*"
+click = "*"
+cryptography = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+start = "python app.py"

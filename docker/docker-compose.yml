@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DEFAULT_AUTHENTICATION_PLUGIN: mysql_native_password
+    networks:
+      app_network:
+        ipv4_address: ${MYSQL_HOST}
+    volumes:
+      - ../app:/app
+      
+  web:
+    container_name: web
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      args:
+        - PIPFILE=app/Pipfile
+        - PIPFILE_LOCK=app/Pipfile.lock
+    env_file:
+      - .env
+      - ../app/.env
+    networks:
+      - app_network
+    ports:
+      - "5000:3000"
+    depends_on:
+      - mysql
+    volumes:
+      - ../app:/app
+      
+networks:
+  app_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/24
